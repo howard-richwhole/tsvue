@@ -1,12 +1,13 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
 import { pathToFileURL } from 'node:url'
+import { mockConfig } from './types'
 import { buildSync } from 'esbuild'
 import { PluginOption } from 'vite'
 import chokidar from 'chokidar'
 import path from 'node:path'
 import fs from 'node:fs'
 import _ from 'lodash'
-import { mockConfig } from './types'
+
 type loadedMock = Map<string, mockConfig[]>
 const folderName = 'mock'
 const folderPath = path.resolve('.', folderName)
@@ -16,7 +17,11 @@ const loadedMockConfig: loadedMock = new Map()
 function loadMockApi() {
   loadedMockConfig.clear()
   _.chain(fs.readdirSync(folderPath))
-    .filter(i => !['index.ts', 'types.ts'].includes(i) && path.extname(i).toLowerCase() === '.ts')
+    .filter(
+      i =>
+        !['index.ts', 'types.ts'].includes(i) &&
+        path.extname(i).toLowerCase() === '.ts',
+    )
     .map(async i => {
       const outfile = `${i}-${Date.now()}.mjs`
       const { text, path: filePath } = buildSync({
@@ -75,17 +80,19 @@ export default function (): PluginOption {
           )
         })
         if (foundReq) {
-          const mockRes = _.isFunction((foundReq as mockConfig).response)
-            ? (foundReq as mockConfig).response({
+          const mockRes = _.isFunction(foundReq.response)
+            ? foundReq.response({
                 body: await parseJson(req),
                 query,
                 headers: req.headers,
               })
-            : (foundReq as mockConfig).response
+            : foundReq.response
 
           res.setHeader('Content-Type', 'application/json')
-          res.statusCode = (foundReq as mockConfig).status || 200
-          res.end(JSON.stringify(mockRes))
+          res.statusCode = foundReq.status || 200
+          setTimeout(() => {
+            res.end(JSON.stringify(mockRes))
+          }, foundReq.timeout || 0)
           return
         }
         next()
