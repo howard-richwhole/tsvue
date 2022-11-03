@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from 'node:http'
+import { IncomingMessage } from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { mockConfig } from './types'
 import { buildSync } from 'esbuild'
@@ -75,7 +75,7 @@ export default function (): PluginOption {
         const query = Object.fromEntries(url.searchParams.entries())
         const foundReq = _.find(mockList, i => {
           return (
-            i.url.match(new RegExp(url.pathname)) &&
+            url.pathname.match(new RegExp(i.url)) &&
             req.method === i.method.toUpperCase()
           )
         })
@@ -85,6 +85,7 @@ export default function (): PluginOption {
                 body: await parseJson(req),
                 query,
                 headers: req.headers,
+                config:_.pick(foundReq,['status','timeout'])
               })
             : foundReq.response
 
