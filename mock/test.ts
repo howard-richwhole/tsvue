@@ -1,8 +1,8 @@
-import {mockConfig} from './types'
-export default <mockConfig[]>[
+import { mockConfig } from './types'
+const list: mockConfig[] = [
   {
     url: '-/api/CountryLimit/CheckAsync',
-    method: 'post',
+    method: 'Post',
     response: {
       Guid: '90ec247c-b527-43d3-8440-be68146ce461',
       Success: false,
@@ -27,7 +27,7 @@ export default <mockConfig[]>[
     method: 'post',
     timeout: 3000,
     status: 200,
-    response: (args) => {
+    response: args => {
       // 响应内容
       return +args.body.password === 123456
         ? {
@@ -41,8 +41,10 @@ export default <mockConfig[]>[
         : {
             Code: 400,
             Message: '密码错误，请输入123456',
-            Args:args
+            Args: args,
           }
     },
   },
 ]
+
+export default list
