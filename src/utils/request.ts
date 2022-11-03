@@ -33,7 +33,7 @@ export default function <respT>(opts: reqOpts): Promise<respT> {
   })
 }
 
-function useToken():void {
+function useToken(): void {
   const webStore = useWebStore()
   if (webStore.token) {
     headers.authorization = `Bearer ${webStore.token}`
