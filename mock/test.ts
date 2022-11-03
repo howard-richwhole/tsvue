@@ -1,6 +1,6 @@
 import { mockConfig } from './types'
 import _ from 'lodash'
-let token = Date.now()
+let token = ''
 
 const list: mockConfig[] = [
   {
@@ -8,8 +8,9 @@ const list: mockConfig[] = [
     response({ config, headers }) {
       config.timeout = _.random(1, 5) * 1000
       if (headers.token === token) {
+        token = Date.now().toString()
         return {
-          token: Date.now(),
+          token,
           message: 'ok',
         }
       } else {
@@ -22,6 +23,7 @@ const list: mockConfig[] = [
   },
   {
     url: '/api/get',
+    method: 'get',
     timeout: 3000,
     status: 200,
     response({ config, headers }) {

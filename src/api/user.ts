@@ -1,9 +1,28 @@
 import request from '@/utils/request'
 
-export function login(data: { password: string | number }) {
-  return request<{ a: 123 }>({
-    url: '/api/login',
-    method: 'post',
-    data,
+let token = ''
+interface resp {
+  message: string
+  token?: string
+}
+export function check() {
+  return request<resp>({
+    url: '/api/check',
+    headers: {
+      token,
+    },
+  }).then(data => {
+    if (data.token) {
+      token = data.token
+    }
+  })
+}
+
+export function get() {
+  return request<resp>({
+    url: '/api/get',
+    headers: {
+      token,
+    },
   })
 }

@@ -76,11 +76,15 @@ export default function (): PluginOption {
         const foundReq = _.find(mockList, i => {
           return (
             url.pathname.match(new RegExp(i.url)) &&
-            req.method === i.method.toUpperCase()
+            req.method === (i.method ? i.method : 'get').toUpperCase()
           )
-        })
+        }) as mockConfig | undefined
+
         if (foundReq) {
-          const pickConfig = _.pick(foundReq, ['status', 'timeout'])
+          const pickConfig = _.pick(foundReq, ['status', 'timeout']) as Pick<
+            mockConfig,
+            'status' | 'timeout'
+          >
           const mockRes = _.isFunction(foundReq.response)
             ? foundReq.response({
                 body: await parseJson(req),
