@@ -2,7 +2,7 @@ import { mockConfig } from './types'
 const list: mockConfig[] = [
   {
     url: '-/api/CountryLimit/CheckAsync',
-    method: 'Post',
+    method: 'post',
     response: {
       Guid: '90ec247c-b527-43d3-8440-be68146ce461',
       Success: false,
