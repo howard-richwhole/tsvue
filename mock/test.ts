@@ -4,6 +4,12 @@ let token = ''
 
 const list: mockConfig[] = [
   {
+    url: '/api/reset',
+    response(){
+      token = ''
+    }
+  },
+  {
     url: '/api/check',
     response({ config, headers }) {
       config.timeout = _.random(1, 5) * 1000
@@ -16,7 +22,7 @@ const list: mockConfig[] = [
       } else {
         config.status = 401
         return {
-          message: 'fail',
+          message: `fail.${token} !== ${headers.token}`,
         }
       }
     },
@@ -35,7 +41,7 @@ const list: mockConfig[] = [
       } else {
         config.status = 401
         return {
-          message: 'fail',
+          message: `fail.${token} !== ${headers.token}`,
         }
       }
     },

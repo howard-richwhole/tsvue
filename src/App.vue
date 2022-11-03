@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import { get, check } from '@/api/user'
-
+import { get, check, reset } from '@/api/user'
+reset()
 setInterval(() => {
   setTimeout(get, _.random(1, 5) * 1000)
   setTimeout(check, _.random(1, 5) * 1000)

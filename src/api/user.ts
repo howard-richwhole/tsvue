@@ -26,3 +26,8 @@ export function get() {
     },
   })
 }
+export function reset() {
+  return request<void>({
+    url: '/api/reset',
+  })
+}
