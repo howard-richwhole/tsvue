@@ -2,7 +2,7 @@ import {mockConfig} from './types'
 export default <mockConfig[]>[
   {
     url: '-/api/CountryLimit/CheckAsync',
-    method: 'sost',
+    method: 'post',
     response: {
       Guid: '90ec247c-b527-43d3-8440-be68146ce461',
       Success: false,
