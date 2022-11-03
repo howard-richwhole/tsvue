@@ -7,7 +7,7 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "mock/index.ts",
+    "mock/*.ts",
     "vite.config.ts",
     "package.json"
   ]
