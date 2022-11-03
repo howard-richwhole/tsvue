@@ -1,7 +1,8 @@
-export default [
+import {mockConfig} from './types'
+export default <mockConfig[]>[
   {
     url: '-/api/CountryLimit/CheckAsync',
-    method: 'post',
+    method: 'sost',
     response: {
       Guid: '90ec247c-b527-43d3-8440-be68146ce461',
       Success: false,
@@ -22,9 +23,9 @@ export default [
     },
   },
   {
-    url: '/api/login',
+    url: '-/api/login',
     method: 'post',
-    timeout: 1000,
+    timeout: 3000,
     status: 200,
     response: (args) => {
       // 响应内容

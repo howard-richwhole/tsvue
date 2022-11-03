@@ -3,4 +3,4 @@
 
 npm run lint
 git add .
-sleep 3
+sleep 1

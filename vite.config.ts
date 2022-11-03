@@ -30,7 +30,7 @@ export default defineConfig(({mode})=>{
       open: false,
       host: true,
       proxy: {
-        '^/(api)': {
+        '^/api': {
           target: 'http://api.hbo13.com/service',
           changeOrigin: true,
         },
