@@ -80,20 +80,21 @@ export default function (): PluginOption {
           )
         })
         if (foundReq) {
+          const pickConfig = _.pick(foundReq, ['status', 'timeout'])
           const mockRes = _.isFunction(foundReq.response)
             ? foundReq.response({
                 body: await parseJson(req),
                 query,
                 headers: req.headers,
-                config:_.pick(foundReq,['status','timeout'])
+                config: pickConfig,
               })
             : foundReq.response
 
           res.setHeader('Content-Type', 'application/json')
-          res.statusCode = foundReq.status || 200
+          res.statusCode = pickConfig.status || 200
           setTimeout(() => {
             res.end(JSON.stringify(mockRes))
-          }, foundReq.timeout || 0)
+          }, pickConfig.timeout || 0)
           return
         }
         next()
