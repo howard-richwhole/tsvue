@@ -11,16 +11,18 @@ const headers: Record<string, string> = {
   'content-type': 'application/json',
 }
 
-export default function <respT>(opts: reqOpts): Promise<respT> {
+export default function <resp>(opts: reqOpts): Promise<resp> {
   useToken()
+  const abortCtrl = new AbortController()
 
   const fetchOpts: RequestInit = {
     method: opts.method,
     headers: _.assign(headers, opts.headers),
+    signal: abortCtrl.signal,
   }
 
   const url = new URL(opts.url, base.origin + base.pathname)
-  if (!fetchOpts.method || fetchOpts.method.toUpperCase() === 'GET') {
+  if (!fetchOpts.method || fetchOpts.method.toLowerCase() === 'get') {
     _.each(opts.data as Record<string, string>, (val: string, key: string) => {
       url.searchParams.set(key, JSON.stringify(val))
     })
