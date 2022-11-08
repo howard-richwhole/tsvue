@@ -6,40 +6,108 @@ interface reqOpts {
   method?: string
   absolute?: boolean
 }
+class ReqPending {
+  pending = new Map()
+  absReq: Promise<unknown> = Promise.resolve()
+  reqList: Promise<unknown>[] = []
+  started = false
+
+  start() {
+    const { value, done } = this.pending.entries().next()
+    if (done) {
+      this.started = false
+      return
+    }
+    const [cb, { isAbsolute, rs }] = value
+    if (isAbsolute) {
+      const reqList = this.reqList
+      this.reqList = []
+      this.absReq = Promise.allSettled(reqList.concat(this.absReq)).finally(
+        () => {
+          const req = cb()
+          rs(req)
+          return new Promise(resolve => {
+            req.finally(() => {
+              // 延遲100ms 提供運算緩衝
+              setTimeout(resolve, 100)
+            })
+          })
+        },
+      ) as Promise<unknown>
+    } else {
+      this.reqList.push(
+        this.absReq.finally(() => {
+          const req = cb()
+          rs(req)
+          return req
+        }),
+      )
+    }
+    this.pending.delete(cb)
+    this.start()
+  }
+  add<resp>(cb: () => Promise<resp>, isAbsolute?: boolean): Promise<resp> {
+    if (!this.started) {
+      this.started = true
+      this.start()
+    }
+    return new Promise(rs => {
+      this.pending.set(cb, { isAbsolute, rs })
+    })
+  }
+}
+
+function getFetchOpts(
+  opts: reqOpts,
+): RequestInit & { headers: Record<string, string> } {
+  return {
+    method: opts.method,
+    headers: _.assign(
+      {
+        'content-type': 'application/json',
+      },
+      opts.headers,
+    ),
+  }
+}
+
+function setData(
+  opts: reqOpts,
+  fetchOpts: ReturnType<typeof getFetchOpts>,
+): string {
+  const url = new URL(opts.url, base.origin + base.pathname)
+
+  if (!opts.method || opts.method.toLowerCase() === 'get') {
+    _.each(opts.data as Record<string, string>, (val: string, key: string) => {
+      url.searchParams.set(key, JSON.stringify(val))
+    })
+  } else {
+    fetchOpts.body = JSON.stringify(opts.data)
+  }
+  return url.href
+}
 
 const base = new URL(import.meta.env.VITE_API, location.origin)
-const headers: Record<string, string> = {
-  'content-type': 'application/json',
-}
+const reqPending = new ReqPending()
 
 export default function <resp>(opts: reqOpts): Promise<resp> {
   const cb = () => {
-    const url = new URL(opts.url, base.origin + base.pathname)
+    const fetchOpts = getFetchOpts(opts)
+
+    const abortCtrl = new AbortController()
+    fetchOpts.signal = abortCtrl.signal
+
     const webStore = useWebStore()
     if (webStore.token) {
-      headers.authorization = `Bearer ${webStore.token}`
-    }
-    const abortCtrl = new AbortController()
-
-    const fetchOpts: RequestInit = {
-      method: opts.method,
-      headers: _.assign(headers, opts.headers),
-      signal: abortCtrl.signal,
+      fetchOpts.headers.authorization = `Bearer ${webStore.token}`
     }
 
-    if (!fetchOpts.method || fetchOpts.method.toLowerCase() === 'get') {
-      _.each(
-        opts.data as Record<string, string>,
-        (val: string, key: string) => {
-          url.searchParams.set(key, JSON.stringify(val))
-        },
-      )
-    } else {
-      fetchOpts.body = JSON.stringify(opts.data)
-    }
-    return fetch(url.href, fetchOpts).then(data => {
-      return data.json()
+    const url = setData(opts, fetchOpts)
+
+    return fetch(url, fetchOpts).then(data => {
+      return data.json() as Promise<resp>
     })
   }
-  return cb()
+
+  return reqPending.add<resp>(cb, opts.absolute)
 }
