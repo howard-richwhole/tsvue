@@ -4,6 +4,7 @@ interface reqOpts {
   headers?: Record<string, string>
   data?: unknown
   method?: string
+  absolute?: boolean
 }
 
 const base = new URL(import.meta.env.VITE_API, location.origin)

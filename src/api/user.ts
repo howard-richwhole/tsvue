@@ -1,6 +1,5 @@
 import request from '@/utils/request'
 
-let token = ''
 interface resp {
   message: string
   token?: string
@@ -8,25 +7,22 @@ interface resp {
 export function check() {
   return request<resp>({
     url: '/api/check',
-    headers: {
-      token,
-    },
+    absolute: true,
   }).then(data => {
     if (data.token) {
-      token = data.token
+      localStorage.setItem('token', data.token)
     }
+    return data
   })
 }
 
 export function get() {
   return request<resp>({
     url: '/api/get',
-    headers: {
-      token,
-    },
   })
 }
 export function reset() {
+  localStorage.setItem('token', '')
   return request<void>({
     url: '/api/reset',
   })

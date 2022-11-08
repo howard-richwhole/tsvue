@@ -3,10 +3,20 @@
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
 import { get, check, reset } from '@/api/user'
 reset()
-setInterval(() => {
-  setTimeout(get, _.random(1, 5) * 1000)
-  setTimeout(check, _.random(1, 5) * 1000)
-}, 3000)
+console.log(
+  setInterval(() => {
+    setTimeout(() => {
+      get().then(res => {
+        console.log('get', res)
+      })
+    }, _.random(1, 5) * 1000)
+    setTimeout(() => {
+      check().then(res => {
+        console.log('check', res)
+      })
+    }, _.random(1, 5) * 1000)
+  }, 1000),
+)
 </script>
 
 <template lang="pug">
