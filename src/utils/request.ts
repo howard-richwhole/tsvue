@@ -130,6 +130,6 @@ export default function <resp>(opts: reqOpts): Promise<resp> {
     return f
   }
   const p = reqPending.add(cb, opts.absolute)
-  abortableMap.set(p, abortCtrl.abort)
+  abortableMap.set(p, () => abortCtrl.abort())
   return p
 }
