@@ -99,7 +99,7 @@ function setData(
 
 const reqPending = new ReqPending()
 
-export const abortableMap = new WeakMap()
+export const abortableMap: WeakMap<object, () => void> = new WeakMap()
 
 export default function <resp>(opts: reqOpts): Promise<resp> {
   const timeout = 60000
