@@ -16,8 +16,8 @@ export function check() {
   })
 }
 
-export function get() {
-  return request<resp>({
+export function get(): Promise<resp> {
+  return request({
     url: '/api/get',
   })
 }

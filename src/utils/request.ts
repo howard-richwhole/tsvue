@@ -105,7 +105,7 @@ export default function <resp>(opts: reqOpts): Promise<resp> {
     const url = setData(opts, fetchOpts)
 
     return fetch(url, fetchOpts).then(data => {
-      return data.json() as Promise<resp>
+      return data.json().catch(() => data) as Promise<resp>
     })
   }
 
