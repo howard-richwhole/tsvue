@@ -1,4 +1,13 @@
 import { useWebStore } from '@/store/web'
+
+function finalOpts(
+  fetchOpts: ReturnType<typeof getFetchOpts>,
+  originOpts: Readonly<reqOpts>,
+): void {
+  fetchOpts.headers.token = localStorage.getItem('token') || ''
+  originOpts.data
+}
+
 interface reqOpts {
   url: string
   headers?: Record<string, string>
@@ -75,6 +84,7 @@ function setData(
   opts: reqOpts,
   fetchOpts: ReturnType<typeof getFetchOpts>,
 ): string {
+  const base = new URL(import.meta.env.VITE_API, location.origin)
   const url = new URL(opts.url, base.origin + base.pathname)
 
   if (!opts.method || opts.method.toLowerCase() === 'get') {
@@ -87,14 +97,16 @@ function setData(
   return url.href
 }
 
-const base = new URL(import.meta.env.VITE_API, location.origin)
 const reqPending = new ReqPending()
 
+export const abortableMap = new WeakMap()
+
 export default function <resp>(opts: reqOpts): Promise<resp> {
+  const timeout = 60000
+  const abortCtrl = new AbortController()
   const cb = () => {
     const fetchOpts = getFetchOpts(opts)
 
-    const abortCtrl = new AbortController()
     fetchOpts.signal = abortCtrl.signal
 
     const webStore = useWebStore()
@@ -104,10 +116,20 @@ export default function <resp>(opts: reqOpts): Promise<resp> {
 
     const url = setData(opts, fetchOpts)
 
-    return fetch(url, fetchOpts).then(data => {
+    finalOpts(fetchOpts, opts)
+
+    const f = fetch(url, fetchOpts).then(data => {
       return data.json().catch(() => data) as Promise<resp>
     })
+    if (timeout) {
+      const pid = setTimeout(() => abortCtrl.abort(), timeout)
+      f.finally(() => {
+        clearTimeout(pid)
+      })
+    }
+    return f
   }
-
-  return reqPending.add(cb, opts.absolute)
+  const p = reqPending.add(cb, opts.absolute)
+  abortableMap.set(p, abortCtrl.abort)
+  return p
 }
