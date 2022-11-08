@@ -109,5 +109,5 @@ export default function <resp>(opts: reqOpts): Promise<resp> {
     })
   }
 
-  return reqPending.add<resp>(cb, opts.absolute)
+  return reqPending.add(cb, opts.absolute)
 }
