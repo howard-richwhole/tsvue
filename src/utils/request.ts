@@ -71,6 +71,7 @@ function getFetchOpts(
 ): RequestInit & { headers: Record<string, string> } {
   return {
     method: opts.method,
+    credentials: 'omit',
     headers: _.assign(
       {
         'content-type': 'application/json',
