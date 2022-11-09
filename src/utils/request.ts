@@ -44,13 +44,13 @@ class ReqPending {
         },
       ) as Promise<unknown>
     } else {
-      this.reqList.push(
-        this.absReq.finally(() => {
-          const req = cb()
-          rs(req)
-          return req
-        }),
-      )
+      const p = this.absReq.finally(() => {
+        const req = cb()
+        rs(req)
+        _.pull(this.reqList, p)
+        return req
+      })
+      this.reqList.push(p)
     }
     this.pending.delete(cb)
     this.start()
