@@ -1,8 +1,8 @@
 import { useWebStore } from '@/store/web'
 
 function finalOpts(
-  fetchOpts: ReturnType<typeof getFetchOpts>,
   originOpts: Readonly<reqOpts>,
+  fetchOpts: ReturnType<typeof getFetchOpts>,
 ): void {
   fetchOpts.headers.token = localStorage.getItem('token') || ''
   originOpts.data
@@ -117,7 +117,7 @@ export default function <resp>(opts: reqOpts): Promise<resp> {
 
     const url = setData(opts, fetchOpts)
 
-    finalOpts(fetchOpts, opts)
+    finalOpts(opts, fetchOpts)
 
     const f = fetch(url, fetchOpts).then(data => {
       return data.json().catch(() => data) as Promise<resp>
