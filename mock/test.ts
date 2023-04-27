@@ -17,7 +17,7 @@ const list: mockConfig[] = [
         token = Date.now().toString()
         return {
           token,
-          message: 'ok',
+          message: 'kk',
         }
       } else {
         config.status = 401

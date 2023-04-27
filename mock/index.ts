@@ -1,7 +1,7 @@
 import { IncomingMessage } from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { mockConfig } from './types'
-import { buildSync } from 'esbuild'
+import { build } from 'esbuild'
 import { PluginOption } from 'vite'
 import chokidar from 'chokidar'
 import path from 'node:path'
@@ -15,16 +15,15 @@ const folderPath = path.resolve('.', folderName)
 const loadedMockConfig: loadedMock = new Map()
 
 function loadMockApi() {
-  loadedMockConfig.clear()
   _.chain(fs.readdirSync(folderPath))
     .filter(
       i =>
         !['index.ts', 'types.ts'].includes(i) &&
         path.extname(i).toLowerCase() === '.ts',
     )
-    .map(async i => {
+    .each(i => {
       const outfile = `${i}-${Date.now()}.mjs`
-      const { text, path: filePath } = buildSync({
+      return build({
         absWorkingDir: folderPath,
         entryPoints: [path.resolve(folderPath, i)],
         format: 'esm',
@@ -32,16 +31,20 @@ function loadMockApi() {
         platform: 'node',
         outfile,
         write: false,
-      }).outputFiles[0]
-
-      fs.writeFileSync(filePath, text)
-      const config = (await import(pathToFileURL(filePath).toString())).default
-      fs.unlinkSync(filePath)
-      return [outfile, config]
-    })
-    .each(p => {
-      p.then(i => {
+      }).then(({outputFiles}) => {
+        const { text, path: filePath } = outputFiles[0]
+        fs.writeFileSync(filePath, text)
+        return import(pathToFileURL(filePath).toString()).then(
+          ({ default: config }) => {
+            fs.unlinkSync(filePath)
+            return [outfile, config]
+          },
+        )
+      }).then(i => {
+        loadedMockConfig.clear()
         loadedMockConfig.set(i[0], i[1])
+      }).catch(e=>{
+        console.log(e.message)
       })
     })
     .value()
